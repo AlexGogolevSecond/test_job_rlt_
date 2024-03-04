@@ -11,6 +11,34 @@ import sys
 
 client = motor.motor_asyncio.AsyncIOMotorClient("localhost", 27017)
 
+
+def update_date(date: datetime, group_type: str) -> Optional[str]:
+    """Приводим дату/время к требуемому формату_summary_
+
+    Args:
+        date (datetime): дата/время
+        group_type (str): тип агрегации
+
+    Returns:
+        str: результурующая строка даты/времени в формате ISO
+    """
+    year = date.year
+    month = date.month
+    day = date.day
+    hour = date.hour
+
+    result = None
+
+    if group_type == 'month':
+        result = datetime(year=year, month=month, day=1)
+    elif group_type == 'dayOfYear':
+        result = datetime(year=year, month=month, day=day)
+    elif group_type == 'hour':
+        result = datetime(year=year, month=month, day=day, hour=hour)
+
+    return result.strftime('%Y-%m-%dT%H:%M:%S')
+
+
 async def main(data: dict):
     if not isinstance(data, dict):
         try:
@@ -32,18 +60,10 @@ async def main(data: dict):
                                                  group_type=group_type,
                                                  client=client)
 
-    # нужно как-то причесать ответ к требуемому формату:
-    '''
-    {"dataset": [5906586, 5515874, 5889803, 6092634], "labels":
-    ["2022-09-01T00:00:00", "2022-10-01T00:00:00",
-    "2022-11-01T00:00:00", "2022-12-01T00:00:00"]}
-    '''
     dataset = [x.get('total') for x in aggregates]
-    labels = [x.get('date') for x in aggregates] 
+    labels = [update_date(x.get('date'), group_type) for x in aggregates]
 
-    result = {'dataset': dataset, 'labels': labels}
-    print(result)
-    return result
+    return {'dataset': dataset, 'labels': labels}
 
 
 if __name__ == '__main__':

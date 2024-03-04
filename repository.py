@@ -57,16 +57,6 @@ class MongoRepository():
                 collection = client.testrlt.sample_collection
 
                 async for doc in collection.aggregate(pipeline):
-                    print(doc)
                     res.append(doc)
-
-        # aggr = await collection.aggregate(
-
-        # )
-
-        # res = []
-        # for v in aggr:
-        #     res.append(v)
-        #     # print(v)
 
         return res
